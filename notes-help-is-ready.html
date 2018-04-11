@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Заметки</title>
+	<link href="styles.css" rel="stylesheet">
+</head>
+<body>
+<button id="newnote" class="newnote">+</button>
+<div id="board" class="board">
+</div>
+
+<script type="text/javascript">
+	const board = document.getElementById('board');
+	const btn = document.getElementById('newnote');
+	const textarea = document.querySelector('textarea');
+
+	let arr = [];
+
+	let id = 0
+	const generateId = () => {
+	  const idToReturn = id;
+	  id++;
+	  return idToReturn;
+	}
+
+	let deltaX, deltaY;
+
+	const Data = (noteText, posX, posY, active, id) => {
+		return{
+			noteText,
+			posX,
+			posY,
+			active,
+			id
+		}
+	}
+
+	const getData = e =>{
+		e.preventDefault();
+		let noteText = 'Double click to add text';
+		let posX = 10 + 'px';
+		let posY = 10 + 'px';
+		let active = false;
+		let id = generateId();
+		let obj = Data(noteText, posX, posY, active, id);
+		arr.find(item => {
+			if(item.active){
+				item.active = false;
+			}
+		})
+		arr.push(obj);
+		console.log(arr);
+		goNote(arr);
+	}
+
+	const goNote = arr => {
+		board.innerHTML = '';
+		arr.forEach(function(item, index, arr){
+			createNote(item.noteText, item.posX, item.posY, item.active, index, item.id, arr);
+		})
+	}
+
+	const createNote = (noteText, posX, posY, active, index, id, arr) => {
+		const note = document.createElement('div');
+		note.className = 'note';
+		note.style.left = posX;
+		note.style.top = posY;
+		board.appendChild(note);
+
+		const div = document.createElement('div');
+		div.className = 'dblock';
+		div.textContent = noteText;
+		note.appendChild(div);
+
+		const textarea = document.createElement('textarea');
+		textarea.className = 'dnone';
+		note.appendChild(textarea);
+		
+		const br = document.createElement('br');
+		board.appendChild(br);
+
+		const changingNote = arr.find(item => item.id === id);
+
+		div.ondblclick = () =>{
+			const alreadyActive = arr.find(item => item.active === true);
+			if(alreadyActive){
+				alert('Ошибка');
+			}else{
+				div.className = 'dnone';
+				textarea.className = 'dblock';
+				changingNote.active = true;	
+				textarea.focus();
+			}
+		}
+		textarea.ondblclick = () =>{
+			div.className = 'dblock';
+			textarea.className = 'dnone';
+			changingNote.noteText = textarea.value;
+			changingNote.active = false;
+			goNote(arr);
+		}
+		note.onmousedown = e =>{
+			let mouseX = e.pageX;
+			let mouseY = e.pageY;
+			let noteX = note.offsetLeft;
+			let noteY = note.offsetTop;
+			deltaX = mouseX - noteX;
+			deltaY = mouseY - noteY;
+			window.addEventListener("mousemove", getMouse);
+		}
+		note.onmouseup = () => {
+			window.removeEventListener("mousemove", getMouse);
+			const changingNote = arr.find(item => item.id === id);
+			changingNote.posX = note.style.left;
+			changingNote.posY = note.style.top;
+		}
+		const getMouse = e =>{
+			let pX = e.pageX;
+			let pY = e.pageY;
+			note.style.left = (pX - deltaX) + "px";
+			note.style.top = (pY - deltaY) + "px";
+		}
+	}
+
+	btn.onclick = getData;
+</script>
+	
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
